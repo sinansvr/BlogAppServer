@@ -1,9 +1,7 @@
- const {connect} =require("mongoose")
+const { connect } = require("mongoose");
 
- module.exports= ()=> {
-    connect(process.env.MONGODB
-      // ,{useNewUrlParser:true, useUnifiedTopology:true}
-      )
-    .then(()=>console.log("--DB Connected--"))
-    .catch((err)=>console.log("DB Can Not Connected",err.message))
- }
+module.exports = function () {
+  connect(process.env.MONGODB)
+    .then(() => console.log("-- DB Connected --"))
+    .catch((err) => console.log("-- DB Not Connected --", err.message));
+};
