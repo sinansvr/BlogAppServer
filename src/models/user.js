@@ -52,12 +52,10 @@ const UserSchema = new Schema({
     image: {
         type: String,
         trim: true,
-        required: false
     },
     bio: {
         type: String,
         trim: true,
-        required: false
     },
     isAdmin: {
         type: Boolean,
@@ -68,7 +66,7 @@ const UserSchema = new Schema({
 // Schema Configs:
 UserSchema.pre('save', function(next){
     if(this.password){
-        const isPasswordValidated = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+.,])[A-Za-z\d@$!%*?&+.,].{8,}$/.test(data.password)
+        const isPasswordValidated = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+.,])[A-Za-z\d@$!%*?&+.,].{8,}$/.test(this.password)
         if(isPasswordValidated){
             this.password = passwordEncrypt(this.password)
         }else{
