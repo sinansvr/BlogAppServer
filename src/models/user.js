@@ -59,7 +59,7 @@ const UserSchema=new Schema({
         type: String,
         trim: true,
         required: true,
-        set:(password)=>passwordEncrypt(password)
+        // set:(password)=>passwordEncrypt(password)
     },
     first_name: {
         type: String,
@@ -87,5 +87,20 @@ const UserSchema=new Schema({
     },
 ​
 },{ collection: 'users', timestamps: true })
-/* ------------------------------------------------------- */
-// Schema Configs:
+
+
+UserSchema.pre("save",function(next){
+    if(this.password){
+        // pass == (min 1: lowerCase, upperCase, Numeric, @$!%*?& + min 8 chars)
+    const isPasswordValidated = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+.,]).{8,}$/.test(this.password)
+
+    if(isPasswordValidated){
+        this.password = passwordEncrypt(this.password)
+    }else{ next(new Error("Password is not valid"))}
+
+    next()
+}
+})
+
+
+module.exports=model("User",UserSchema)
