@@ -8,6 +8,18 @@ const { Schema, model } = require("mongoose");
 /* ------------------------------------------------------- */
 // Blog Model:
 
+/* 
+{
+  "title": "title 2",
+  "content": "content 2",
+  "image": "image 2",
+  "category": "655c6d7f0a6fe58b8a9dcc5f",
+  "author": "655b56275a51b6c4beaaa772",
+  "status": "p"
+}
+*/
+
+const Category = require("./category");
 
 const BlogSchema = new Schema(
   {
@@ -30,8 +42,7 @@ const BlogSchema = new Schema(
       required: true,
     },
     author: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
       required: true,
     },
     status: {
@@ -39,37 +50,51 @@ const BlogSchema = new Schema(
       enum: ["p", "d"],
       default: "d",
     },
-
-    comments: [],
-
     category_name: {
       type: String,
       trim: true,
-      default: async function () {
-        const categories = await Category.findOne(this.category);
-        return categories.name;
-      },
     },
     post_views: {
       type: Number,
       default: 0,
     },
+    comments: [],
     comment_count: {
       type: Number,
-      default: 0,
+      default: function () {
+        return this.comments.length;
+      },
+      transform: function () {
+        return this.comments.length;
+      },
     },
     likes_n: {
-        type: Array,
-        default: []
+      type: Array,
+      default: [],
     },
     likes: {
-        type: Number,
-        default: 0 ,
-        transform: function(){this.likes_n.lenght}
+      type: Number,
+      default: function () {
+        return this.likes_n.length;
       },
+      transform: function () {
+        return this.likes_n.length;
+      },
+    },
   },
   { collection: "blogs", timestamps: true }
 );
+
+BlogSchema.pre("save", async function (next) {
+  // category alanına bağlı kategori bilgisini al
+  const category = await Category.findOne(this.category);
+
+  // category_name'i belirle
+  this.category_name = category ? category.name : "Default Category";
+
+  // sonraki adıma geç
+  next();
+});
 
 /* ------------------------------------------------------- */
 module.exports = model("Blog", BlogSchema);

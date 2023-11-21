@@ -10,11 +10,13 @@ module.exports = {
         const data = await res.getModelList(Blog)
         res.status(200).send({
             error: false,
-            // details: await res.getModelListDetails(Blog),
+            details: await res.getModelListDetails(Blog),
             data
         })
     },
     create: async (req, res) => {
+
+        req.body.author = req.user.username
 
         const data = await Blog.create(req.body)
         res.status(201).send({
@@ -23,6 +25,9 @@ module.exports = {
         })
     },
     read: async (req, res) => {
+
+
+        
 
         const data = await Blog.findOne({ _id: req.params.id })
         res.status(200).send({
