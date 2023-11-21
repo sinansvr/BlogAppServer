@@ -9,7 +9,12 @@ const user = require("../controllers/user");
 const auth = require("../controllers/auth");
 
 // user routes
-router.route("/").get(user.list).post(user.create);
+router.route("/")
+  .get(user.list)
+
+router.route("/register").post(user.create);
+
+
 
 router
   .route("/:id")
@@ -20,6 +25,7 @@ router
 
 // auth routes
 router.route("/auth/login").post(auth.login);
+router.route("/auth/logout").post(auth.logout);
 
 /* ------------------------------------------------------- */
 module.exports = router;
