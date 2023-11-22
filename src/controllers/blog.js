@@ -8,10 +8,18 @@ const View = require("../models/view");
 
 module.exports = {
   list: async (req, res) => {
-    const data = await res.getModelList(Blog);
+
+    let filters={status:"p"}
+
+    if((req?.query?.author ) && ( req.user.username==req?.query?.author)) filters=req.query
+    if((req?.query?.author ) && ( req.user.username==req?.query?.author)) throw new Error("You can only see own Blogs!")
+
+    filters= {status:"p",...req.query}
+
+    const data = await res.getModelList(Blog,filters);
     res.status(200).send({
       error: false,
-      details: await res.getModelListDetails(Blog),
+      details: await res.getModelListDetails(Blog,{status:"p"}),
       data,
     });
   },
