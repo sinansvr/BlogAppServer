@@ -64,17 +64,40 @@ const UserSchema = new Schema({
 },{ collection: 'users', timestamps: true })
 /* ------------------------------------------------------- */
 // Schema Configs:
-UserSchema.pre('save', function(next){
-    if(this.password){
-        const isPasswordValidated = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+.,])[A-Za-z\d@$!%*?&+.,].{8,}$/.test(this.password)
-        if(isPasswordValidated){
-            this.password = passwordEncrypt(this.password)
-        }else{
-            next(new Error("Password not validated."))
+// UserSchema.pre('save', function(next){
+//     if(this.password){
+//         const isPasswordValidated = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+.,])[A-Za-z\d@$!%*?&+.,].{8,}$/.test(this.password)
+//         if(isPasswordValidated){
+//             this.password = passwordEncrypt(this.password)
+//         }else{
+//             next(new Error("Password not validated."))
+//         }
+//         next()
+//     }
+// })
+// UserSchema.pre('init', function (data) {
+//     data.id = data._id
+// })
+UserSchema.pre(['save', 'updateOne'], function (next) {
+    // get data from "this" when create;
+    // if process is updateOne, data will receive in "this._update"
+    const data = this?._update || this
+    {
+        if (data?.password) {
+            // pass == (min 1: lowerCase, upperCase, Numeric, @$!%*?& + min 8 chars)
+            const isPasswordValidated = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/.test(data.password)
+            if (isPasswordValidated) {
+                this.password = data.password = passwordEncrypt(data.password)
+                this._update = data // updateOne will wait data from "this._update".
+            } else {
+                next(new Error('Password not validated.'))
+            }
         }
-        next()
+        next() // Allow to save.
     }
 })
+/* ------------------------------------------------------- */
+// FOR REACT PROJECT:
 UserSchema.pre('init', function (data) {
     data.id = data._id
 })

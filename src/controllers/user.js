@@ -54,7 +54,7 @@ module.exports = {
     });
   },
   update: async (req, res) => {
-    const data = await User.updateOne({ _id: req.params.id }, req.body);
+    const data = await User.updateOne({ _id: req.params.id }, req.body,{ runValidators: true });
     res.status(202).send({
       error: false,
       data,
