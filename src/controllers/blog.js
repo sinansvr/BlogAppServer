@@ -5,25 +5,28 @@
 // Blog Controller:
 const Blog = require("../models/blog");
 const View = require("../models/view");
+const Comment = require("../models/comment");
+const Like = require("../models/like");
 
 module.exports = {
   list: async (req, res) => {
 
-    let filters={status:"p"}
+    let filters = {};
 
-    if((req?.query?.author ) && ( req.user.username==req?.query?.author)) filters=req.query
-    if((req?.query?.author ) && ( req.user.username==req?.query?.author)) throw new Error("You can only see own Blogs!")
+    filters = { status: "p" };
 
-    filters= {status:"p",...req.query}
+    if (req?.query?.author && req.user.username === req?.query?.author)
+      filters = req.query;
+    if (req?.query?.author && !(req.user.username === req?.query?.author))
+      throw new Error("You can only see your own blog");
 
-    const data = await res.getModelList(Blog,filters);
-    res.status(200).send({
-      error: false,
-      details: await res.getModelListDetails(Blog,{status:"p"}),
-      data,
-    });
+    const data = await res.getModelList(Blog, filters);
+
+    res.status(200).send( data);
   },
+  
   create: async (req, res) => {
+
     req.body.author = req.user.username;
 
     const data = await Blog.create(req.body);
@@ -96,10 +99,8 @@ app.get('/blogs/:id', async (req, res) => {
     );
 
     const data = await Blog.findOne({ _id: req.params.id });
-    res.status(200).send({
-      error: false,
-      data,
-    });
+
+    res.status(200).send(data);
   },
   update: async (req, res) => {
     const data = await Blog.updateOne({ _id: req.params.id }, req.body);
@@ -110,7 +111,20 @@ app.get('/blogs/:id', async (req, res) => {
     });
   },
   delete: async (req, res) => {
-    const data = await Blog.deleteOne({ _id: req.params.id });
+    const blog = await Blog.findOne({ _id: req.params.id });
+
+    const author = blog?.author;
+    let data;
+    
+    if (req.user.username === blog?.author || req.user.isAdmin) {
+      data = await Blog.deleteOne({ _id: req.params.id });
+
+      await Comment.deleteMany({post: req.params.id })
+      await Like.deleteMany({post_id: req.params.id })
+      await View.deleteMany({post_id: req.params.id })
+
+    } else throw new Error("You can only delte your own comment!");
+
     res.status(data.deletedCount ? 204 : 404).send({
       error: !data.deletedCount,
       data,

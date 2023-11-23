@@ -19,33 +19,19 @@ module.exports = {
 
   create: async (req, res) => {
 
-/* 
-  const user = await User.create(req.body);
-    
-    const id = user._id
-    
-    // register
-     const tokenData = await Token.create({user_id: user._id,token: passwordEncrypt(user._id + Date.now())});
-
-    const {token} = tokenData
-
-    // spread operator used
-    res.status(201).send({...user._doc,token, id });
-*/
-
     const user = await User.create(req.body);
-
-    // rest operoter
-    const { _id, ...userInfo } = user._doc;
+    
 
     // register
-    const tokenData = await Token.create({user_id: _id,token: passwordEncrypt(_id + Date.now()),});
+    const tokenData = await Token.create({user_id: user._id,token: passwordEncrypt(user._id + Date.now())});
 
-    userInfo.id = _id
-    userInfo.token = tokenData.token
 
-    res.status(201).send(userInfo);
+    user._doc.id = user._id;
+    user._doc.token = tokenData.token;
+
+    res.status(201).send(user);
   },
+
   read: async (req, res) => {
     const data = await User.findOne({ _id: req.params.id });
     res.status(200).send({
@@ -54,7 +40,9 @@ module.exports = {
     });
   },
   update: async (req, res) => {
-    const data = await User.updateOne({ _id: req.params.id }, req.body,{ runValidators: true });
+    const data = await User.updateOne({ _id: req.params.id }, req.body, {
+      runValidators: true,
+    });
     res.status(202).send({
       error: false,
       data,
